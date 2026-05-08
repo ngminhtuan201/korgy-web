@@ -138,7 +138,10 @@ http.interceptors.response.use(
       return new Promise((resolve) => {
         addRefreshSubscriber((token: AuthToken) => {
           if (originalRequest.headers) {
-            originalRequest.headers.set("Authorization", `Bearer ${token.token}`);
+            originalRequest.headers.set(
+              "Authorization",
+              `Bearer ${token.token}`,
+            );
           }
           resolve(http(originalRequest));
         });
@@ -152,10 +155,11 @@ http.interceptors.response.use(
       onRefreshed(newToken);
 
       if (originalRequest.headers) {
-        originalRequest.headers.set("Authorization", `Bearer ${newToken.token}`);
+        originalRequest.headers.set(
+          "Authorization",
+          `Bearer ${newToken.token}`,
+        );
       }
-
-      console.log(originalRequest.headers)
 
       return http(originalRequest);
     } catch (refreshError) {

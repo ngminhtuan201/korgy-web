@@ -62,7 +62,7 @@ export function CTA() {
             >
               <Button
                 size="lg"
-                variant="secondary"
+                variant="outline"
                 className="w-full sm:w-auto text-base px-8"
               >
                 Try for Free

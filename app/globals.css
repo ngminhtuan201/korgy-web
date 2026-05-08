@@ -81,6 +81,11 @@
   --shadow-xl: 0px 8px 0px 0px hsl(0 0% 10.1961% / 0.13);
   --shadow-2xl: 0px 10px 0px 0px hsl(0 0% 10.1961% / 0.13);
   --tracking-normal: normal;
+
+  --correct-answer: oklch(0.7037 0.1774 190.0846);
+  --wrong-answer: oklch(0.7037 0.1774 190.0846);
+  --correct-answer-foreground: oklch(1 0 0);
+  --wrong-answer-foreground: oklch(1 0 0);
 }
 
 .dark {
@@ -238,6 +243,7 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
 @layer utilities {
   .animate-bounce-slow {
     animation: bounce-slow 3s infinite;

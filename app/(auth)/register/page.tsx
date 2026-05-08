@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { motion, type Variants } from "motion/react";
@@ -37,7 +36,6 @@ const itemVariants: Variants = {
 };
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { register } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,7 +66,9 @@ export default function RegisterPage() {
 
     try {
       await register({ fullName, email, password });
-      toast("Register successfully. Please check and verify your email address.")
+      toast(
+        "Register successfully. Please check and verify your email address.",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account");
     } finally {
@@ -237,7 +237,7 @@ export default function RegisterPage() {
                 >
                   <svg
                     viewBox="0 0 24 24"
-                    className="mr-2 h-4 w-4"
+                    className="mr-2 h-5 w-5"
                     aria-hidden="true"
                   >
                     <path

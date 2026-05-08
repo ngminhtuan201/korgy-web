@@ -3,6 +3,7 @@ import { Fredoka } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
 const fredoka = Fredoka({
   variable: "--font-fredoka",
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en" className={`${fredoka.variable} h-full antialiated`}>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-fredoka)]">
         <AuthProvider>
+          <Toaster duration={3000} />
           <TooltipProvider>{children}</TooltipProvider>
         </AuthProvider>
       </body>

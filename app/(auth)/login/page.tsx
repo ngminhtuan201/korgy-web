@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { motion, type Variants } from "motion/react";
-import { useAuth } from "@/features/auth/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { Eye, EyeOff } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -39,7 +39,7 @@ const itemVariants: Variants = {
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, login } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -57,21 +57,19 @@ export default function LoginPage() {
       await login({ email, password });
       router.push(callbackUrl);
       router.refresh();
+
+      toast.success("Login successfully");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid email or password",
       );
+      toast.error("Invalid credentials");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    console.log(isAuthenticated)
-    if (isAuthenticated) {
-      router.push("/dashboard")
-    }
-  }, [])
+  const handleGoogleAuth = () => {};
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -93,15 +91,6 @@ export default function LoginPage() {
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="grid gap-3">
-              {error && (
-                <motion.div
-                  custom={0}
-                  variants={itemVariants}
-                  className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-                >
-                  {error}
-                </motion.div>
-              )}
               <motion.div
                 custom={1}
                 variants={itemVariants}
@@ -186,14 +175,14 @@ export default function LoginPage() {
               </motion.div>
               <motion.div custom={5} variants={itemVariants}>
                 <Button
-                  type="button"
                   variant="outline"
                   className="w-full"
                   disabled={isLoading}
+                  onClick={handleGoogleAuth}
                 >
                   <svg
                     viewBox="0 0 24 24"
-                    className="mr-2 h-4 w-4"
+                    className="mr-2 h-5 w-5"
                     aria-hidden="true"
                   >
                     <path

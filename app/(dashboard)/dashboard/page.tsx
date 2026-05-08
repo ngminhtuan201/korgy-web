@@ -1,4 +1,4 @@
-import { BookOpen, Gamepad2, GraduationCap, Users } from "lucide-react";
+import { Gamepad2, GraduationCap, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
@@ -26,9 +26,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-[family-name:var(--font-sans)] text-2xl font-bold text-primary">
-          Welcome back!
-        </h2>
+        <h2 className="text-2xl font-semibold">Welcome back!</h2>
         <p className="text-muted-foreground">
           Here&apos;s an overview of your teaching activity.
         </p>

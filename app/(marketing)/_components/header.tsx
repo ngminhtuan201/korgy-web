@@ -3,9 +3,25 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function Header() {
-  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout().then(() => {
+      router.refresh();
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,7 +70,29 @@ export function Header() {
               </Link>
             </>
           ) : (
-            <Button size="lg" asChild><Link href={"/dashboard"}>Go to Dashboard</Link></Button>
+            <div className="flex items-center gap-2">
+              <Button size="lg" asChild>
+                <Link href={"/dashboard"}>Go to Dashboard</Link>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Avatar size="lg">
+                    <AvatarImage src={"/avatar.jpeg"}></AvatarImage>
+                    <AvatarFallback>AV</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={handleLogout}
+                  >
+                    <LogOut />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </div>
       </div>

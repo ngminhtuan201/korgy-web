@@ -1,29 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Edit,
-  Globe,
-  Lock,
-  Play,
-  Plus,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { setService, Set } from "@/features/sets/set-service";
+import { EditSetDialog } from "@/features/sets/components/dialogs/edit-set-dialog";
+import { QuestionEditor } from "@/features/sets/components/questions";
+import { Question, Set, setService } from "@/features/sets/set-service";
+import { ArrowLeft, Check, Globe, Lock, Save, SquarePen } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function SetDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const router = useRouter();
 
   const [set, setSet] = useState<Set | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,6 +28,7 @@ export default function SetDetailPage() {
       try {
         const data = await setService.getSet(id);
         setSet(data);
+        setQuestions(data.questions || []);
       } catch (err) {
         console.error("Failed to fetch set:", err);
         setError("Failed to load set");
@@ -42,14 +40,21 @@ export default function SetDetailPage() {
     fetchSet();
   }, [id]);
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this set?")) return;
+  const handleSaveSet = async () => {
+    if (!set) return;
 
+    setIsSaving(true);
     try {
-      await setService.deleteSet(id);
-      window.location.href = "/sets";
+      await setService.updateSet(set.id, { questions });
+      toast.success("Playset saved successfully!", {
+        icon: <Check className="h-4 w-4 text-green-500" />,
+      });
+      router.refresh();
     } catch (err) {
-      console.error("Failed to delete set:", err);
+      console.error("Failed to save set:", err);
+      toast.error("Failed to save playset");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -57,66 +62,68 @@ export default function SetDetailPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-96 w-full rounded-xl" />
       </div>
     );
   }
 
   if (error || !set) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <h3 className="text-lg font-semibold">Set not found</h3>
-        <p className="text-sm text-muted-foreground">
-          {error || "The set you're looking for doesn't exist"}
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="p-4 rounded-full bg-muted mb-4">
+          <Lock className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <h3 className="text-xl font-bold">Playset not found</h3>
+        <p className="text-muted-foreground max-w-xs mx-auto mt-2">
+          {error || "The set you're looking for doesn't exist or is private."}
         </p>
-        <Button variant={"outline"} className="mt-4" asChild size={"lg"}>
-          <Link href="/sets">Back to Sets</Link>
+        <Button variant={"outline"} className="mt-8" asChild size={"lg"}>
+          <Link href="/sets">Back to Playsets</Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" asChild>
-          <Link href="/sets">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Playsets
-          </Link>
-        </Button>
-        <div className="flex gap-2">
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-1 h-4 w-4" />
-            Delete
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/sets/${id}/edit`}>
-              <Edit className="mr-1 h-4 w-4" />
-              Edit
+    <div className="">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" asChild className="-ml-2">
+            <Link href="/sets">
+              <ArrowLeft className="mr-2 h-5 w-5" />
+              Back to Playsets
             </Link>
           </Button>
-          <Button variant={"secondary"}>
-            <Play className="mr-1 h-4 w-4" fill="currentColor" />
-            Play
-          </Button>
         </div>
-      </div>
 
-      <div className="rounded-lg border bg-card p-6">
-        <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">{set.name}</h1>
-            {set.description && (
-              <p className="mt-2 text-muted-foreground">{set.description}</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={"outline"}>
+        <div className="rounded-2xl border bg-card p-8 shadow-sm overflow-hidden relative">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-semibold tracking-tight">
+                  {set.name}
+                </h1>
+                {set.description && (
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    {set.description}
+                  </p>
+                )}
+              </div>
+              <EditSetDialog
+                set={set}
+                onSave={(data) => setSet({ ...set, ...data })}
+              >
+                <Button variant="outline">
+                  <SquarePen className="mr-2 h-5 w-5" /> Edit
+                </Button>
+              </EditSetDialog>
+            </div>
+            {/* 
+            <Badge variant={"secondary"} className="py-3">
               {set.isPublic ? (
                 <>
-                  <Globe className="mr-1 h-3 w-3" />
+                  <Globe />
                   Public
                 </>
               ) : (
@@ -124,43 +131,47 @@ export default function SetDetailPage() {
                   <Lock /> Private
                 </>
               )}
-            </Badge>
-            <Badge variant="outline">{set.questions.length} questions</Badge>
+            </Badge> */}
+          </div>
+        </div>
+
+        <QuestionEditor questions={questions} onChange={setQuestions} />
+      </div>
+
+      {/* Sticky Footer */}
+      <div className="w-full border-t py-4 mt-8 sticky bottom-0 left-0 right-0 bg-background">
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
+          <div className="hidden sm:block">
+            <p className="text-sm text-muted-foreground">
+              Last saved at: {new Date(set.updatedAt).toLocaleTimeString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button
+              size="lg"
+              variant="ghost"
+              asChild
+              className="flex-1 sm:flex-none"
+            >
+              <Link href="/sets">Cancel</Link>
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleSaveSet}
+              disabled={isSaving}
+              className="flex-1 sm:flex-none"
+            >
+              {isSaving ? (
+                <>Saving...</>
+              ) : (
+                <>
+                  <Save className="mr-1 h-5 w-5" /> Save Playset
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
-
-      {set.questions.length > 0 ? (
-        <div className="rounded-lg border">
-          <div className="border-b p-4">
-            <h2 className="font-semibold">Questions</h2>
-          </div>
-          <div className="divide-y">
-            {set.questions.map((question: unknown, index: number) => (
-              <div key={index} className="flex items-center gap-4 p-4">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm">
-                  {index + 1}
-                </span>
-                <span className="flex-1">
-                  {(question as { question?: string }).question || "Question"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-lg border py-12 text-center">
-          <p className="text-muted-foreground">
-            No questions yet. Add some questions to get started.
-          </p>
-          <Button variant={"outline"} className="mt-4" asChild>
-            <Link href={`/sets/${id}/edit`}>
-              <Plus />
-              Add Questions
-            </Link>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
